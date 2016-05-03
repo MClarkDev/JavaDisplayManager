@@ -1,6 +1,7 @@
 package org.jdm.core;
 
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ComponentEvent;
@@ -32,6 +33,8 @@ public class DisplayManager extends JFrame {
 		getContentPane().setLayout(null);
 
 		new Thread() {
+			
+			@Override
 			public void run() {
 
 				while (!isInterrupted()) {
@@ -51,6 +54,7 @@ public class DisplayManager extends JFrame {
 
 		addComponentListener(new ComponentListener() {
 
+			@Override
 			public void componentResized(ComponentEvent e) {
 
 				render();
@@ -79,18 +83,23 @@ public class DisplayManager extends JFrame {
 	}
 
 	public void showDM(boolean fullscreen) {
+		
+		dispose();
 
 		if (fullscreen) {
 
 			// set fullscreen
-			setUndecorated(true);
-			setExtendedState(JFrame.MAXIMIZED_BOTH);
+			setExtendedState(Frame.MAXIMIZED_BOTH);
 
 			GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
 			if (gd.isFullScreenSupported()) {
 
 				gd.setFullScreenWindow(this);
+			}
+			try {
+				setUndecorated(true);
+			} catch (Exception e) {
 			}
 		} else {
 
@@ -124,10 +133,9 @@ public class DisplayManager extends JFrame {
 
 		setAlwaysOnTop(false);
 		toBack();
-		setExtendedState(JFrame.ICONIFIED);
+		setExtendedState(Frame.ICONIFIED);
 		setVisible(false);
 		invalidate();
-		dispose();
 	}
 
 	public void setActiveDisplay(int index) {
@@ -137,7 +145,6 @@ public class DisplayManager extends JFrame {
 	}
 
 	public void addDisplay(Display display) {
-
 		displays.add(display);
 	}
 
@@ -157,7 +164,7 @@ public class DisplayManager extends JFrame {
 	}
 
 	public void render() {
-
+		
 		render(activeDisplay);
 	}
 
@@ -179,14 +186,16 @@ public class DisplayManager extends JFrame {
 	}
 
 	public void render(int index) {
+		setLayout(null);
+		getContentPane().removeAll();
+		getContentPane().setLayout(null);
+
+		if (displays.isEmpty()) {
+			return;
+		}
 
 		try {
-
 			System.out.println("Rendering Display [ " + index + " ]");
-
-			setLayout(null);
-			getContentPane().removeAll();
-			getContentPane().setLayout(null);
 
 			Display display = displays.get(index);
 
@@ -208,5 +217,10 @@ public class DisplayManager extends JFrame {
 
 			e.printStackTrace();
 		}
+	}
+
+	public void clear() {
+		displays.clear();
+		render();
 	}
 }

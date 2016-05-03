@@ -1,6 +1,5 @@
-package org.jdm.display.panel.object;
+package org.jdm.api.jenkins;
 
-import org.jdm.api.jenkins.BuildStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -17,8 +16,6 @@ public class Build {
 
 	private BuildStatus status = BuildStatus.UNKNOWN;
 
-	private BuildStatus lastStatus = BuildStatus.UNKNOWN;
-
 	private boolean building = false;
 
 	private String commit = "";
@@ -32,6 +29,8 @@ public class Build {
 	private long estimatedDuration = 0;
 
 	private String description = "";
+
+	private Build last;
 
 	public Build(String host, String name) {
 
@@ -263,16 +262,6 @@ public class Build {
 		this.building = building;
 	}
 
-	public void setLastStatus(BuildStatus status) {
-
-		this.lastStatus = status;
-	}
-
-	public BuildStatus getLastStatus() {
-
-		return lastStatus;
-	}
-
 	public static Build Unknown(String host, String name) {
 
 		return new Build(host, name);
@@ -284,5 +273,15 @@ public class Build {
 		b.setStatus(BuildStatus.INVALID);
 
 		return b;
+	}
+
+	public Build getLast() {
+
+		return last;
+	}
+
+	public void setLast(Build last) {
+
+		this.last = last;
 	}
 }

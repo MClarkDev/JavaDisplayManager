@@ -12,8 +12,15 @@ import javax.swing.JPanel;
 
 public abstract class Panel extends JPanel {
 
+	private int gridWidth = 1;
+
+	private int gridHeight = 1;
+
+	private int padding = 0;
+
 	public Panel() {
 		super();
+		setBackground(Color.BLACK);
 
 	}
 
@@ -36,8 +43,11 @@ public abstract class Panel extends JPanel {
 		g.clearRect(0, 0, getWidth(), getHeight());
 
 		// draw the border
-		g.setColor(Color.gray);
-		g.drawRect(0, 0, getWidth() - 2, getHeight() - 2);
+		// g.setColor( getBackground() );
+		// g.drawRect( 0, 0, getWidth(), getHeight() );
+
+		g.setColor(getBackground());
+		g.fillRect(0, 0, getWidth(), getHeight());
 
 		// call the implemented method
 		try {
@@ -58,12 +68,20 @@ public abstract class Panel extends JPanel {
 		this.revalidate();
 	}
 
+	public void setGridSize(int w, int h) {
+
+		this.gridWidth = w;
+		this.gridHeight = h;
+	}
+
+	@Override
 	public void setSize(int x, int y) {
 		super.setSize(x, y);
 
 		setPreferredSize(new Dimension(x, y));
 	}
 
+	@Override
 	public void setLocation(int x, int y) {
 		super.setLocation(x, y);
 
@@ -73,9 +91,24 @@ public abstract class Panel extends JPanel {
 	protected abstract void onDraw(Graphics g);
 
 	public void update(String update) {
-
 		onUpdate(update);
 	}
 
 	protected abstract void onUpdate(String string);
+
+	public int getGridWidth() {
+		return gridWidth;
+	}
+
+	public int getGridHeight() {
+		return gridHeight;
+	}
+
+	public int getPadding() {
+		return padding;
+	}
+
+	public void setPadding(int padding) {
+		this.padding = padding;
+	}
 }

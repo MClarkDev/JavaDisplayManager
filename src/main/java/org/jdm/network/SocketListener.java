@@ -12,7 +12,7 @@ public interface SocketListener {
 	 * 
 	 * @param connection
 	 */
-	void onConnect(SocketConnection connection);
+	Object onConnect(SocketConnection connection);
 
 	/**
 	 * Called when the client has made a request, terminated by 2x newline

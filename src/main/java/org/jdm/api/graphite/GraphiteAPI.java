@@ -1,10 +1,10 @@
-package org.jdm.api.jenkins;
+package org.jdm.api.graphite;
 
 import java.net.URLEncoder;
 
 import org.jdm.api.APISync;
+import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * JenkinsAPI
@@ -17,11 +17,11 @@ import org.json.JSONObject;
  * 
  * @author Matthew Clark
  */
-public final class JenkinsAPI extends APISync {
+public final class GraphiteAPI extends APISync {
 
-	private static JenkinsAPI api;
+	private static GraphiteAPI api;
 
-	private JenkinsAPI() {
+	private GraphiteAPI() {
 		super();
 	}
 
@@ -33,12 +33,12 @@ public final class JenkinsAPI extends APISync {
 
 			try {
 				// update build
-				Build build = updateBuild(key);
+				MetricSet metricSet = updateMetricSet(key);
 
 				// update cache with a valid build
-				if (build != null) {
+				if (metricSet != null) {
 
-					set(key, build);
+					set(key, metricSet);
 				}
 			} catch (Exception e) {
 
@@ -48,7 +48,7 @@ public final class JenkinsAPI extends APISync {
 		}
 	}
 
-	private Build updateBuild(String key) throws Exception {
+	private MetricSet updateMetricSet(String key) throws Exception {
 
 		String[] details = key.split("\\|");
 
@@ -57,44 +57,40 @@ public final class JenkinsAPI extends APISync {
 
 		// job details url
 		String encoded = URLEncoder.encode(name, "UTF-8");
-		String buildURL = host + "/job/" + encoded + "/lastBuild/api/json";
+		String metricURL = host + "/render?target=" + encoded + "&format=json";
 
 		// update from json
 		try {
 
-			JSONObject json = fetchJSONObject(buildURL);
-			Build update = Build.fromJSON(host, name, json);
+			JSONArray json = fetchJSONArray(metricURL);
+			MetricSet metricSet = MetricSet.fromJSON(json);
 
-			if (update != null) {
-
-				// give it the last build
-				Build last = (Build) get(key);
-				update.setLast(last);
+			if (metricSet != null) {
 
 				// update the cache
-				set(key, update);
-				return update;
+				set(key, metricSet);
+				return metricSet;
 			}
 
 		} catch (JSONException e) {
-
+e.printStackTrace();
 		}
 
 		// default return
-		return Build.Invalid(host, name);
+		return MetricSet.Invalid(host, name);
 	}
 
-	public static JenkinsAPI getInstance() {
+	public static GraphiteAPI getInstance() {
 
 		// if no existing instance
 		if (api == null) {
 
 			// create one
-			synchronized (JenkinsAPI.class) {
+			synchronized (GraphiteAPI.class) {
 
 				if (api == null) {
 
-					api = new JenkinsAPI();
+					api = new GraphiteAPI();
 				}
 			}
 		}

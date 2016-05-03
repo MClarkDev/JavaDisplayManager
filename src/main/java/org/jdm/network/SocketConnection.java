@@ -25,6 +25,8 @@ public class SocketConnection {
 
 	private boolean keepAlive = false;
 
+	private boolean authenticated = false;
+
 	/**
 	 * 
 	 */
@@ -55,10 +57,6 @@ public class SocketConnection {
 			Thread socketThread = new SocketThread(socket, socketListener, keepAlive);
 			socketThread.start();
 
-			if (onDataReceivedListener != null) {
-
-				onDataReceivedListener.onConnect(this);
-			}
 		} catch (Exception e) {
 
 			disconnect("non-connect");
@@ -76,9 +74,10 @@ public class SocketConnection {
 
 				if (!reason.equals("graceful") && !reason.equals("done")) {
 
-					printWriter.print("disconnect: " + reason);
+					printWriter.print("disconnect: " + reason + "\r\n");
 				}
 
+				printWriter.flush();
 				printWriter.close();
 				printWriter = null;
 			}
@@ -125,6 +124,7 @@ public class SocketConnection {
 			this.keepAlive = keepAlive;
 		}
 
+		@Override
 		public void run() {
 
 			setName("Connection to: " + socket.getInetAddress().toString() + ":" + socket.getPort() + " -> "
@@ -138,6 +138,12 @@ public class SocketConnection {
 				// setup the input stream
 				streamReader = new InputStreamReader(socket.getInputStream());
 				bufferedReader = new BufferedReader(streamReader);
+
+				if (callback != null) {
+
+					Object o = callback.onConnect(SocketConnection.this);
+					printObject(o);
+				}
 
 				ArrayList<String> clientRequest = new ArrayList<String>();
 
@@ -163,33 +169,7 @@ public class SocketConnection {
 							// Print the response
 							if (response != null) {
 
-								if (response instanceof String) {
-
-									// if single string
-									printWriter.println((String) response);
-
-								} else if (response instanceof String[]) {
-
-									// if string array
-									for (String line : (String[]) response) {
-
-										printWriter.println(line);
-									}
-								} else if (response instanceof byte[]) {
-
-									// if byte array
-									outputStream.write((byte[]) response);
-									outputStream.flush();
-								} else if (response instanceof byte[][]) {
-
-									// if array of byte arrays
-									for (byte[] bytes : (byte[][]) response) {
-
-										outputStream.write((byte[]) bytes);
-										outputStream.write('\n');
-									}
-								}
-								outputStream.flush();
+								printObject(response);
 							}
 
 							// Close if not keepalive
@@ -231,6 +211,48 @@ public class SocketConnection {
 			}
 			return;
 		}
+	}
+
+	public void printObject(Object o) throws Exception {
+
+		if (o instanceof String) {
+
+			// if single string
+			printWriter.println((String) o);
+
+		} else if (o instanceof String[]) {
+
+			// if string array
+			for (String line : (String[]) o) {
+
+				printWriter.println(line);
+			}
+		} else if (o instanceof byte[]) {
+
+			// if byte array
+			outputStream.write((byte[]) o);
+			outputStream.flush();
+		} else if (o instanceof byte[][]) {
+
+			// if array of byte arrays
+			for (byte[] bytes : (byte[][]) o) {
+
+				outputStream.write(bytes);
+				outputStream.write('\n');
+			}
+		}
+
+		outputStream.flush();
+	}
+
+	public boolean isAuthenticated() {
+
+		return authenticated;
+	}
+
+	public void setAuthenticated(boolean authenticated) {
+
+		this.authenticated = authenticated;
 	}
 
 }

@@ -1,5 +1,6 @@
 package org.jdm.core;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -11,6 +12,8 @@ public class Display extends JPanel {
 
 	public Display() {
 		super();
+		setOpaque(false);
+		setBackground(Color.BLACK);
 	}
 
 	private static final long serialVersionUID = -8025974966030477942L;
@@ -23,12 +26,14 @@ public class Display extends JPanel {
 		panels = new Panel[width][height];
 	}
 
+	@Override
 	public void setSize(int x, int y) {
 		super.setSize(x, y);
 
 		setPreferredSize(new Dimension(x, y));
 	}
 
+	@Override
 	public void setLocation(int x, int y) {
 		super.setLocation(x, y);
 
@@ -52,6 +57,9 @@ public class Display extends JPanel {
 
 	public void draw() {
 
+		int padding = 8;
+		int halfPad = padding / 2;
+
 		int width = (int) (getSize().getWidth());
 		int height = (int) (getSize().getHeight());
 
@@ -72,19 +80,27 @@ public class Display extends JPanel {
 					add(panel);
 
 					// size
-					int panelWidth = width / panels.length;
+					int gridWidth = panel.getGridWidth();
+					int gridHeight = panel.getGridHeight();
+
+					int panelWidth = (width / panels.length);
 					int panelHeight = height / panels[x].length;
 
-					panel.setSize(panelWidth, panelHeight);
+					int myWidth = (gridWidth * panelWidth);
+					int myHeight = (gridHeight * (panelHeight));
+
+					panel.setSize(myWidth - padding, myHeight - padding);
+					panel.setPadding(padding);
 
 					// position
+
 					int posX = panelWidth * x;
 					int posY = panelHeight * y;
 
-					panel.setLocation(posX, posY);
+					panel.setLocation(posX + halfPad, posY + halfPad);
 
 					// draw
-					panel.draw();
+					// panel.draw();
 				}
 			}
 		}
@@ -99,7 +115,7 @@ public class Display extends JPanel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
-		int width = getWidth();
-		int height = getHeight();
+		g.setColor(Color.black);
+		g.fillRect(0, 0, getWidth(), getHeight());
 	}
 }

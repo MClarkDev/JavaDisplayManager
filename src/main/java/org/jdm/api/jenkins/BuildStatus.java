@@ -45,13 +45,13 @@ public enum BuildStatus {
 			break;
 
 		case 9:
-			colorMap.put(BuildStatus.UNKNOWN, Color.BLACK);
-			colorMap.put(BuildStatus.ABORTED, Color.GRAY);
-			colorMap.put(BuildStatus.BUILDING, Color.BLUE);
-			colorMap.put(BuildStatus.FAILURE, Color.RED);
-			colorMap.put(BuildStatus.UNSTABLE, Color.ORANGE);
-			colorMap.put(BuildStatus.SUCCESS, Color.GREEN);
-			colorMap.put(BuildStatus.INVALID, Color.ORANGE);
+			colorMap.put(BuildStatus.UNKNOWN, Color.decode("#888888"));
+			colorMap.put(BuildStatus.ABORTED, Color.decode("#AAAAAA"));
+			colorMap.put(BuildStatus.BUILDING, Color.decode("#5555FF"));
+			colorMap.put(BuildStatus.FAILURE, Color.decode("#FF5555"));
+			colorMap.put(BuildStatus.UNSTABLE, Color.decode("#FFFF55"));
+			colorMap.put(BuildStatus.SUCCESS, Color.decode("#33CC33"));
+			colorMap.put(BuildStatus.INVALID, Color.decode("#555555"));
 			break;
 		}
 

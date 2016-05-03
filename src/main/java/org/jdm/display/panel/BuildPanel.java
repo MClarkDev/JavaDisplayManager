@@ -6,10 +6,10 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.util.HashMap;
 
+import org.jdm.api.jenkins.Build;
 import org.jdm.api.jenkins.BuildStatus;
 import org.jdm.api.jenkins.JenkinsAPI;
 import org.jdm.core.Panel;
-import org.jdm.display.panel.object.Build;
 
 public class BuildPanel extends Panel {
 
@@ -32,6 +32,7 @@ public class BuildPanel extends Panel {
 	private FontMetrics metrics;
 
 	private String host;
+
 	private String name;
 
 	private int titleWidth;
@@ -46,6 +47,7 @@ public class BuildPanel extends Panel {
 
 	private Font fontStandard, fontBold;
 
+	@Override
 	public void onDraw(Graphics g) {
 
 		Build build;
@@ -55,8 +57,8 @@ public class BuildPanel extends Panel {
 			build = Build.Unknown("", "");
 		} else {
 
-			JenkinsAPI jenkinsAPI = JenkinsAPI.getInstance(host);
-			build = jenkinsAPI.getBuild(name);
+			JenkinsAPI jenkinsAPI = JenkinsAPI.getInstance();
+			build = (Build) jenkinsAPI.get(host + "|" + name);
 
 			if (build == null) {
 
@@ -69,18 +71,23 @@ public class BuildPanel extends Panel {
 		int height = getHeight();
 
 		// background color based on last or present
-		Color c;
-		BuildStatus lastStatus = build.getLastStatus();
+		Color c = Color.decode("#AAAAAA");
+		if (build.getStatus() != BuildStatus.BUILDING) {
 
-		if (lastStatus != BuildStatus.UNKNOWN) {
-
-			c = BuildStatus.getColorMap(colorSchema).get(lastStatus);
+			// show the current status
+			c = BuildStatus.getColorMap(colorSchema).get(build.getStatus());
 		} else {
 
-			c = BuildStatus.getColorMap(colorSchema).get(build.getStatus());
+			// show status of last build if applicable
+			Build last = build.getLast();
+			if (last != null && last.getStatus() != BuildStatus.UNKNOWN) {
+
+				c = BuildStatus.getColorMap(colorSchema).get(last.getStatus());
+			}
 		}
-		g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 56));
+		g.setColor(c);
 		g.fillRect(0, 0, width, height);
+
 		// dividers
 		int divHeight = height / 8;
 
@@ -89,7 +96,7 @@ public class BuildPanel extends Panel {
 		g.drawLine(0, 7 * divHeight, width, 7 * divHeight);
 
 		// padding
-		int padding = width / 56;
+		int padding = getPadding();
 
 		// fonts
 		int fontSize = (int) ((divHeight - padding) * .75f);
@@ -159,14 +166,14 @@ public class BuildPanel extends Panel {
 		g.setFont(fontStandard);
 		metrics = g.getFontMetrics();
 
-		value = "xxxxxxxxx";
+		value = "xxxxxxxxxx";
 		valueWidth = metrics.stringWidth(value);
 
 		// draw names
-		g.drawString("Number : ", padding, (int) (3.5 * divHeight) - padding);
-		g.drawString("Author : ", padding, (int) (4.5 * divHeight) - padding);
-		g.drawString("Branch : ", padding, (int) (5.5 * divHeight) - padding);
-		g.drawString("Commit : ", padding, (int) (6.5 * divHeight) - padding);
+		g.drawString(" Number : ", padding, (int) (3.5 * divHeight) - padding);
+		g.drawString(" Author : ", padding, (int) (4.5 * divHeight) - padding);
+		g.drawString(" Branch : ", padding, (int) (5.5 * divHeight) - padding);
+		g.drawString(" Commit : ", padding, (int) (6.5 * divHeight) - padding);
 
 		// draw values
 		g.setFont(fontBold);
@@ -176,11 +183,13 @@ public class BuildPanel extends Panel {
 		g.drawString(build.getShortCommit(), padding + valueWidth, (int) (6.5 * divHeight) - padding);
 	}
 
+	@Override
 	public String getName() {
 
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 
 		this.name = name;
